@@ -55,3 +55,38 @@ export const deleteUser = async (req, res) => {
     }
   };
   
+
+
+
+
+  // controllers/adminController.js
+export const getSellerRequests = async (req, res) => {
+  const users = await User.find({ isSellerRequested: true, role: 'user' });
+  res.json(users);
+};
+
+export const approveSeller = async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  user.role = 'seller';
+  user.isSellerRequested = false;
+  await user.save();
+
+  res.json({ message: 'User is now a seller' });
+};
+
+
+export const revokeSeller = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.role = 'user';
+    await user.save();
+
+    res.status(200).json({ message: 'Seller access revoked', user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
