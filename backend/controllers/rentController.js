@@ -1,30 +1,38 @@
 import Rental from '../models/Rental.js';
+import Item from '../models/Item.js';
 
-export const requestRental = async (req, res) => {
+export const createRental = async (req, res) => {
   try {
-    const { itemId, rentFrom, rentTo } = req.body;
+    const { itemId, advancePaid, startDate ,endDate} = req.body;
 
-    const rental = new Rental({
-      user: req.user.id,
+    const item = await Item.findById(itemId);
+    if (!item || !item.available) {
+      return res.status(400).json({ message: 'Item not available for rent' });
+    }
+
+    const rental = await Rental.create({
       item: itemId,
-      rentFrom,
-      rentTo,
-      status: 'pending'
+      renter: req.user._id,
+      advancePaid,
+      startDate,
+      endDate,
     });
 
-    await rental.save();
-    res.status(201).json({ message: 'Rental request created', rental });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    // Optionally make item unavailable until returned
+    item.available = false;
+    await item.save();
+
+    res.status(201).json({ message: 'Rental created', rental });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
-export const viewRentalHistory = async (req, res) => {
+export const getMyRentals = async (req, res) => {
   try {
-    const history = await Rental.find({ user: req.user.id }).populate('item');
-    if (!history.length) return res.status(404).json({ message: 'No history' });
-    res.status(200).json(history);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const rentals = await Rental.find({ renter: req.user._id }).populate('item');
+    res.status(200).json(rentals);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
