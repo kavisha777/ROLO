@@ -5,9 +5,9 @@ const itemSchema = new mongoose.Schema({
   description: String,
   image: String,
   pricePerDay: Number,
-  category: { type: String, enum: ['electronics', 'furniture', 'vehicles', 'clothing', 'books', 'other'], required: true },
+  category: { type: String, enum: ['electronics', 'furniture', 'vehicles', 'clothing', 'books', 'other'], required: true},
   available: { type: Boolean, default: true },
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' ,required: true,}
 }, { timestamps: true });
 
 export default mongoose.model('Item', itemSchema);

@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.get('/profile', authMiddleware(), getUserProfile);
 router.put('/profile', authMiddleware(), updateUserProfile);
-router.put('/become-seller', authMiddleware() , upgradeToSeller);
+router.patch('/become-seller', authMiddleware() , upgradeToSeller);
 
 export default router;

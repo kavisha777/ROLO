@@ -76,6 +76,71 @@ export const createItem = async (req, res) => {
 
 
 
+
+
+export const updateItem = async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id);
+
+    if (!item) return res.status(404).json({ message: 'Item not found' });
+
+    // Only admin or the seller who owns the item can update
+    if (
+      req.user.role !== 'admin' &&
+      item.owner.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({ message: 'Unauthorized to update this item' });
+    }
+
+    // Update item fields
+    Object.assign(item, req.body);
+    const updatedItem = await item.save();
+
+    res.status(200).json({ message: 'Item updated successfully', item: updatedItem });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+export const deleteItem = async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id);
+
+    if (!item) return res.status(404).json({ message: 'Item not found' });
+
+    // Only admin or the seller who owns the item can delete
+    if (
+      req.user.role !== 'admin' &&
+      item.owner.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({ message: 'Unauthorized to delete this item' });
+    }
+
+    await item.deleteOne();
+    res.status(200).json({ message: 'Item deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+
 export const listMyItems = async (req, res) => {
   try {
     const items = await Item.find({ owner: req.user.id }); // or req.user._id
