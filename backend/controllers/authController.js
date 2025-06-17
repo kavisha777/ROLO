@@ -55,3 +55,10 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
+export const logout = (req, res) => {
+  res.status(200).json({ message: 'Logout successful. Please delete your token on client.' });
+};
+

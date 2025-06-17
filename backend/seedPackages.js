@@ -43,7 +43,7 @@ const seedPackages = async () => {
     });
     console.log("📦 Connected to MongoDB");
 
-    await Package.deleteMany(); // Optional: clear existing packages
+    await Package.deleteMany(); 
     await Package.insertMany(packages);
     console.log("✅ Packages seeded successfully!");
   } catch (error) {
