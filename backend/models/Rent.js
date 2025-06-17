@@ -7,9 +7,10 @@ const rentSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },
   status: {
     type: String,
-    enum: ['pending', 'approved', 'confirmed', 'cancelled', 'completed', 'rejected'],
+    enum: ['pending', 'approved', 'confirmed', 'in-use', 'returned', 'completed', 'cancelled', 'rejected'],
     default: 'pending'
   },
+  
   advancePaid: { type: Number, default: 0 },
 
   // ✅ New field to save payment metadata

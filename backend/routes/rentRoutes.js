@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-  requestRent,respondToRentRequest,getUnavailableDates,getRequests,getMyApprovedRents,getMyItemsRentHistory} from '../controllers/rentController.js';
+  requestRent,respondToRentRequest,getUnavailableDates,getRequests,getMyApprovedRents,getMyItemsRentHistory,confirmPickup,markReturned,completeRent} from '../controllers/rentController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { handlePaymentSuccess } from '../controllers/paymentController.js';
 
@@ -17,7 +17,11 @@ router.patch('/:rentId/respond', authMiddleware(['seller']), respondToRentReques
 router.post('/payment/success', authMiddleware(), handlePaymentSuccess);
 
 
+router.patch('/:rentId/pickup', authMiddleware(['seller']), confirmPickup);
+router.patch('/:rentId/return', authMiddleware(['user']), markReturned);
+router.patch('/:rentId/complete', authMiddleware(['seller']), completeRent);
 
-// router.patch('/:rentId/complete', authMiddleware(['seller']), completeRent);
+
+
 
 export default router;

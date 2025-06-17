@@ -160,55 +160,82 @@ export const getMyItemsRentHistory = async (req, res) => {
 
 
 
+export const confirmPickup = async (req, res) => {
+  try {
+    const { rentId } = req.params;
+    const sellerId = req.user._id;
+
+    const rent = await Rent.findById(rentId).populate('item');
+    if (!rent) return res.status(404).json({ message: "Rent not found" });
+
+    if (rent.item.owner.toString() !== sellerId.toString())
+      return res.status(403).json({ message: "Unauthorized" });
+
+    if (rent.status !== 'confirmed')
+      return res.status(400).json({ message: "Payment not completed" });
+
+    rent.status = 'in-use';
+    await rent.save();
+
+    res.status(200).json({ message: 'Pickup confirmed. Rent in progress.', rent });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 
 
-//   export const confirmRent = async (req, res) => {
-//     try {
-//       const { rentId } = req.params;
-  
-//       // Find the rent
-//       const rent = await Rent.findById(rentId).populate('item');
-  
-//       if (!rent) {
-//         return res.status(404).json({ message: 'Rent not found' });
-//       }
-  
-//       // Check if the logged-in user is the owner of the item
-//       if (rent.item.owner.toString() !== req.user._id.toString()) {
-//         return res.status(403).json({ message: 'Only the item owner can confirm the rent' });
-//       }
-  
-//       if (rent.status !== 'pending') {
-//         return res.status(400).json({ message: 'Rent is already processed' });
-//       }
-  
-//       // Confirm the rent
-//       rent.status = 'approved';
-//       await rent.save();
-  
-//       res.status(200).json({ message: 'Rent approved successfully', rent });
-//     } catch (error) {
-//       res.status(500).json({ message: 'Failed to confirm rent', error: error.message });
-//     }
-//   };
 
 
-// export const completeRent = async (req, res) => {
-//   const { rentId } = req.params;
 
-//   const rent = await Rent.findById(rentId).populate('item');
-//   if (!rent || rent.item.owner.toString() !== req.user._id.toString()) {
-//     return res.status(403).json({ message: 'Unauthorized' });
-//   }
 
-//   rent.status = 'completed';
-//   rent.item.available = true;
-//   await rent.item.save();
-//   await rent.save();
 
-//   res.json({ message: 'Rental completed', rent });
-// };
+
+export const markReturned = async (req, res) => {
+  const { rentId } = req.params;
+  const userId = req.user._id;
+
+  const rent = await Rent.findById(rentId);
+  if (!rent) return res.status(404).json({ message: 'Rent not found' });
+
+  if (rent.renter.toString() !== userId.toString()) {
+    return res.status(403).json({ message: 'Unauthorized' });
+  }
+
+  if (rent.status !== 'in-use') {
+    return res.status(400).json({ message: 'Item is not in-use' });
+  }
+
+  rent.status = 'returned';
+  await rent.save();
+
+  res.json({ message: 'Item marked as returned. Awaiting seller confirmation.', rent });
+};
+
+
+
+
+
+export const completeRent = async (req, res) => {
+  const { rentId } = req.params;
+  const sellerId = req.user._id;
+
+  const rent = await Rent.findById(rentId).populate('item');
+  if (!rent) return res.status(404).json({ message: 'Rent not found' });
+
+  if (rent.item.owner.toString() !== sellerId.toString()) {
+    return res.status(403).json({ message: 'Not your item' });
+  }
+
+  if (rent.status !== 'returned') {
+    return res.status(400).json({ message: 'Item has not been returned yet' });
+  }
+
+  rent.status = 'completed';
+  await rent.save();
+
+  res.json({ message: 'Rent marked as completed. Thank you!', rent });
+};
 
 
 export const getUnavailableDates = async (req, res) => {
