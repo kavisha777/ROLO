@@ -90,3 +90,16 @@ export const revokeSeller = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
+
+
+export const getAllSellers = async (req, res) => {
+  try {
+    const sellers = await User.find({ role: 'seller', isSellerApproved: true }).select('-password');
+    res.status(200).json(sellers);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch sellers', error: error.message });
+  }
+};

@@ -1,12 +1,25 @@
 import mongoose from 'mongoose';
 
-const rentalSchema = new mongoose.Schema({
+const rentSchema = new mongoose.Schema({
   item: { type: mongoose.Schema.Types.ObjectId, ref: 'Item', required: true },
   renter: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  advancePaid: { type: Number, required: true },
   startDate: { type: Date, required: true },
-  endDate: { type: Date },
-  status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' }
+  endDate: { type: Date, required: true },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'confirmed', 'cancelled', 'completed', 'rejected'],
+    default: 'pending'
+  },
+  advancePaid: { type: Number, default: 0 },
+
+  // ✅ New field to save payment metadata
+  paymentDetails: {
+    transactionId: { type: String },
+    method: { type: String },
+    amount: { type: Number },
+    paidAt: { type: Date }
+  }
+
 }, { timestamps: true });
 
-export default mongoose.model('Rental', rentalSchema);
+export default mongoose.model('Rent', rentSchema);

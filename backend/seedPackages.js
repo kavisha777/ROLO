@@ -5,8 +5,6 @@ import Package from './models/Package.js';
 
 dotenv.config();
 
-await mongoose.connect(process.env.MONGO_URI); // or hardcode if local
-
 const packages = [
   {
     name: "Basic",
@@ -37,12 +35,23 @@ const packages = [
   }
 ];
 
-try {
-  await Package.deleteMany(); // Optional: clears old data
-  await Package.insertMany(packages);
-  console.log("✅ Packages seeded to MongoDB!");
-} catch (error) {
-  console.error("❌ Failed to seed packages:", error);
-} finally {
-  mongoose.connection.close();
-}
+const seedPackages = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("📦 Connected to MongoDB");
+
+    await Package.deleteMany(); // Optional: clear existing packages
+    await Package.insertMany(packages);
+    console.log("✅ Packages seeded successfully!");
+  } catch (error) {
+    console.error("❌ Error seeding packages:", error);
+  } finally {
+    await mongoose.disconnect();
+    console.log("🔌 MongoDB connection closed");
+  }
+};
+
+seedPackages();
