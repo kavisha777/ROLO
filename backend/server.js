@@ -6,12 +6,22 @@ import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import itemRoutes from './routes/itemRoutes.js';
 import rentRoutes from './routes/rentRoutes.js';
+
 // import paymentRoutes from './routes/paymentRoutes.js';
 import packageRoutes from './routes/packageRoutes.js';
+import cors from 'cors';
 
 dotenv.config();
 const app = express();
 app.use(express.json());
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+
+
+// In routes or root file like app.js
+app.get('/api/test', (req, res) => {
+    res.json({ message: "Backend working!" });
+  });
+  
 
 // Connect to DB
 connectDB();
