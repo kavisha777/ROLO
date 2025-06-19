@@ -21,44 +21,147 @@
 // }
 
 
-import React from 'react';
+// import React from 'react';
+// import { useNavigate } from 'react-router-dom';
+
+// const LoginModal = () => {
+//   const navigate = useNavigate();
+
+//   const closeModal = () => navigate(-1); // Go back to previous page
+
+//   return (
+//     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+//       <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg relative">
+//         <button
+//           onClick={closeModal}
+//           className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+//         >
+//           ✕
+//         </button>
+//         <h2 className="text-2xl font-bold mb-4 text-center" style={{ color: '#D30C7B' }}>Login to Rolo</h2>
+//         <form className="space-y-4">
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700">Email</label>
+//             <input
+//               type="email"
+//               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
+//               placeholder="you@example.com"
+//             />
+//           </div>
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700">Password</label>
+//             <input
+//               type="password"
+//               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
+//               placeholder="••••••••"
+//             />
+//           </div>
+//           <button
+//             type="submit"
+//             className="w-full py-2 rounded-md"
+//             style={{ backgroundColor: '#D30C7B', color: '#FFF4F8' }}
+//           >
+//             Login
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default LoginModal;
+
+
+
+
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const LoginModal = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const closeModal = () => navigate(-1); // Go back to previous page
+  const closeModal = () => navigate(-1); // go back to background route
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:5000/api/login', { email, password });
+      const user = res.data;
+
+      // Optionally store user in localStorage
+      localStorage.setItem('user', JSON.stringify(user));
+
+      // Route based on role
+      if (user.role === 'admin') {
+        navigate('/dashboard/admin');
+      } else if (user.role === 'seller') {
+        const approvalCheck = await axios.get(`http://localhost:5000/api/seller-status/${user.id}`);
+        if (approvalCheck.data.approved) {
+          navigate('/dashboard/seller');
+        } else {
+          alert('Seller account not approved yet.');
+          closeModal();
+        }
+      } else {
+        navigate('/dashboard/user');
+      }
+    } catch (err) {
+      alert('Invalid email or password');
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg relative">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+      onClick={closeModal}
+    >
+      <div
+        className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg relative"
+        onClick={(e) => e.stopPropagation()} // prevent close when clicking inside
+      >
         <button
           onClick={closeModal}
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl"
         >
           ✕
         </button>
-        <h2 className="text-2xl font-bold mb-4 text-center" style={{ color: '#D30C7B' }}>Login to Rolo</h2>
-        <form className="space-y-4">
+
+        <h2 className="text-2xl font-bold mb-4 text-center" style={{ color: '#D30C7B' }}>
+          Login to Rolo
+        </h2>
+
+        <form className="space-y-4" onSubmit={handleLogin}>
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#D30C7B]"
               placeholder="you@example.com"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <input
               type="password"
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#D30C7B]"
               placeholder="••••••••"
             />
           </div>
+
           <button
             type="submit"
-            className="w-full py-2 rounded-md"
+            className="w-full py-2 rounded-md font-semibold"
             style={{ backgroundColor: '#D30C7B', color: '#FFF4F8' }}
           >
             Login
